@@ -4,6 +4,8 @@ from flask_marshmallow import Marshmallow
 from marshmallow import fields, Schema, validates, ValidationError
 from sqlalchemy import Column, String, Integer
 import os
+import requests
+import json
 
 
  #Init app
@@ -18,6 +20,9 @@ db = SQLAlchemy(app)
 
 #Init marshmallow
 ma = Marshmallow(app)
+
+
+
 
 #Product Class/Model
 class Product(db.Model):
@@ -42,13 +47,28 @@ class ProductSchema(ma.Schema):
 product_schema = ProductSchema()
 products_schema = ProductSchema( many=True)
 
+
+
+#GET DATA
+def get_data():
+    r = requests.get('https://www.habitat.fr/api/qDbBye4V7vtMu8qL97vvHTAnLQuEhC/product/911095/sku')
+    return r.json()
+#    return json.loads(r.content) #convert content to dict
+
+
 #add product 
 @app.route('/product', methods=['POST'])
 def add_product():
-    name = request.json['name']
-    description = request.json['description']
-    price = request.json['price']
-    qty = request.json['qty']
+    my_data = get_data()
+    name = my_data['title']
+    description = my_data['full_title']
+    price = my_data['price_ttc']
+    qty = my_data['stock_count']
+
+#    name = request.json['name']
+#    description = request.json['description']
+#    price = request.json['price']
+#    qty = request.json['qty']
 
     new_product = Product(name,description,price,qty)
     db.session.add(new_product)
